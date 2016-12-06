@@ -1,16 +1,13 @@
-#ifndef _ERROR_H
-#define _ERROR_H
 
-void unix_error(char *msg) /* unix-style error */
-{
-    fprintf(stderr, "%s: %s\n", msg, strerror(errno));
-    /* exit(0); */
-}
+/*
+ * Copyright (C) Zhu Jiashun
+ * Copyright (C) Zaver
+ */
 
-void posix_error(int code, char *msg) /* posix-style error */
-{
-    fprintf(stderr, "%s: %s\n", msg, strerror(code));
-    /* exit(0); */
-}
+#ifndef ERROR_H
+#define ERROR_H
+
+#define ZV_OK       0
+#define ZV_ERROR    -1
 
 #endif

@@ -1,3 +1,9 @@
+
+/*
+ * Copyright (C) Zhu Jiashun
+ * Copyright (C) Zaver
+ */
+
 #include "threadpool.h"
 
 typedef enum {
@@ -24,22 +30,21 @@ zv_threadpool_t *threadpool_init(int thread_num) {
     pool->shutdown = 0;
     pool->started = 0;
     pool->threads = (pthread_t *)malloc(sizeof(pthread_t) * thread_num);
-    /* dummy head */
-    pool->head = (zv_task_t *)malloc(sizeof(zv_task_t));
-    pool->head->func = NULL;
-    pool->head->arg = NULL;
-    pool->head->next = NULL;
+    pool->head = (zv_task_t *)malloc(sizeof(zv_task_t));    /* dummy head */
 
     if ((pool->threads == NULL) || (pool->head == NULL)) {
         goto err;
     }
+
+    pool->head->func = NULL;
+    pool->head->arg = NULL;
+    pool->head->next = NULL;
 
     if (pthread_mutex_init(&(pool->lock), NULL) != 0) {
         goto err;
     }
 
     if (pthread_cond_init(&(pool->cond), NULL) != 0) {
-        pthread_mutex_lock(&(pool->lock));
         pthread_mutex_destroy(&(pool->lock));
         goto err;
     }
@@ -50,7 +55,7 @@ zv_threadpool_t *threadpool_init(int thread_num) {
             threadpool_destroy(pool, 0);
             return NULL;
         }
-        log_info("thread: %08x started", pool->threads[i]);
+        log_info("thread: %08x started", (uint32_t) pool->threads[i]);
 
         pool->thread_count++;
         pool->started++;
@@ -87,7 +92,7 @@ int threadpool_add(zv_threadpool_t *pool, void (*func)(void *), void *arg) {
     zv_task_t *task = (zv_task_t *)malloc(sizeof(zv_task_t));
     if (task == NULL) {
         log_err("malloc task fail");
-        return -1;
+        goto out;
     }
     
     // TODO: use a memory pool
@@ -166,7 +171,7 @@ int threadpool_destroy(zv_threadpool_t *pool, int graceful) {
             if (pthread_join(pool->threads[i], NULL) != 0) {
                 err = zv_tp_thread_fail;
             }
-            log_info("thread %08x exit", pool->threads[i]);
+            log_info("thread %08x exit", (uint32_t) pool->threads[i]);
         }
              
     } while(0);
@@ -198,15 +203,14 @@ static void *threadpool_worker(void *arg) {
         }
 
         if (pool->shutdown == immediate_shutdown) {
-            pthread_mutex_unlock(&(pool->lock));
             break;
         } else if ((pool->shutdown == graceful_shutdown) && pool->queue_size == 0) {
-            pthread_mutex_unlock(&(pool->lock));
             break;
         }
 
         task = pool->head->next;
         if (task == NULL) {
+            pthread_mutex_unlock(&(pool->lock));
             continue;
         }
 

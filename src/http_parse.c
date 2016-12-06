@@ -6,9 +6,12 @@
 
 #include "http.h"
 #include "http_parse.h"
+#include "error.h"
 
 int zv_http_parse_request_line(zv_http_request_t *r) {
-    u_char c, ch, *p, *m;
+    u_char ch, *p, *m;
+    size_t pi;
+
     enum {
         sw_start = 0,
         sw_method,
@@ -30,7 +33,8 @@ int zv_http_parse_request_line(zv_http_request_t *r) {
     state = r->state;
 
     // log_info("ready to parese request line, start = %d, last= %d", (int)r->pos, (int)r->last);
-    for (p = r->pos; p < r->last; p++) {
+    for (pi = r->pos; pi < r->last; pi++) {
+        p = (u_char *)&r->buf[pi % MAX_BUF];
         ch = *p;
 
         switch (state) {
@@ -256,14 +260,14 @@ int zv_http_parse_request_line(zv_http_request_t *r) {
         }
     }
 
-    r->pos = p;
+    r->pos = pi;
     r->state = state;
 
     return ZV_AGAIN;
 
 done:
 
-    r->pos = p + 1;
+    r->pos = pi + 1;
 
     if (r->request_end == NULL) {
         r->request_end = p;
@@ -275,7 +279,9 @@ done:
 }
 
 int zv_http_parse_request_body(zv_http_request_t *r) {
-    u_char c, ch, *p, *m;
+    u_char ch, *p;
+    size_t pi;
+
     enum {
         sw_start = 0,
         sw_key,
@@ -293,7 +299,8 @@ int zv_http_parse_request_body(zv_http_request_t *r) {
     //log_info("ready to parese request body, start = %d, last= %d", r->pos, r->last);
 
     zv_http_header_t *hd; 
-    for (p = r->pos; p < r->last; p++) {
+    for (pi = r->pos; pi < r->last; pi++) {
+        p = (u_char *)&r->buf[pi % MAX_BUF];
         ch = *p;
 
         switch (state) {
@@ -352,7 +359,7 @@ int zv_http_parse_request_body(zv_http_request_t *r) {
             if (ch == LF) {
                 state = sw_crlf;
                 // save the current http header
-                hd = (zv_http_request_t *)malloc(sizeof(zv_http_request_t));
+                hd = (zv_http_header_t *)malloc(sizeof(zv_http_header_t));
                 hd->key_start   = r->cur_header_key_start;
                 hd->key_end     = r->cur_header_key_end;
                 hd->value_start = r->cur_header_value_start;
@@ -385,13 +392,13 @@ int zv_http_parse_request_body(zv_http_request_t *r) {
         }   
     }
 
-    r->pos = p;
+    r->pos = pi;
     r->state = state;
 
     return ZV_AGAIN;
 
 done:
-    r->pos = p + 1;
+    r->pos = pi + 1;
 
     r->state = sw_start;
 

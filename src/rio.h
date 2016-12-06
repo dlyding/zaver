@@ -1,17 +1,24 @@
-#ifndef _RIO_H
-#define _RIO_H
 
-#include <stdio.h>
-#include <string.h>
-#include <errno.h>
-#include <unistd.h>
-#include "dbg.h"
+/*
+ * Copyright (C) Zhu Jiashun
+ * Copyright (C) Zaver
+ */
+
+#ifndef RIO_H
+#define RIO_H
+
+#include <sys/types.h>
 
 #define RIO_BUFSIZE 8192
+
+/*
+* reference the implementation in CSAPP
+*/
+
 typedef struct {
-    int rio_fd;                /* descriptor for this internal buf */
-    int rio_cnt;               /* unread bytes in internal buf */
-    char *rio_bufptr;          /* next unread byte in internal buf */
+    int rio_fd;             /* descriptor for this internal buf */
+    ssize_t rio_cnt;        /* unread bytes in internal buf */
+    char *rio_bufptr;       /* next unread byte in internal buf */
     char rio_buf[RIO_BUFSIZE]; /* internal buffer */
 } rio_t;
 

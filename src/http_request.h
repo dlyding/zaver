@@ -11,7 +11,6 @@
 #include "http.h"
 
 #define ZV_AGAIN    EAGAIN
-#define ZV_OK       0
 
 #define ZV_HTTP_PARSE_INVALID_METHOD        10
 #define ZV_HTTP_PARSE_INVALID_REQUEST       11
@@ -33,8 +32,9 @@
 typedef struct zv_http_request_s {
     void *root;
     int fd;
-    char buf[MAX_BUF];
-    void *pos, *last;
+    int epfd;
+    char buf[MAX_BUF];  /* ring buffer */
+    size_t pos, last;
     int state;
     void *request_start;
     void *method_end;   /* not include method_end*/
@@ -55,6 +55,7 @@ typedef struct zv_http_request_s {
     void *cur_header_value_start;
     void *cur_header_value_end;
 
+    void *timer;
 } zv_http_request_t;
 
 typedef struct {
@@ -79,14 +80,16 @@ typedef struct {
     zv_http_header_handler_pt handler;
 } zv_http_header_handle_t;
 
-extern void zx_http_handle_header(zv_http_request_t *r, zv_http_out_t *o);
-extern int zv_init_request_t(zv_http_request_t *r, int fd, zv_conf_t *cf);
-extern int zv_free_request_t(zv_http_request_t *r);
+void zv_http_handle_header(zv_http_request_t *r, zv_http_out_t *o);
+int zv_http_close_conn(zv_http_request_t *r);
 
-extern int zv_init_out_t(zv_http_out_t *o, int fd);
-extern int zv_free_out_t(zv_http_out_t *o);
+int zv_init_request_t(zv_http_request_t *r, int fd, int epfd, zv_conf_t *cf);
+int zv_free_request_t(zv_http_request_t *r);
 
-extern const char *get_shortmsg_from_status_code(int status_code);
+int zv_init_out_t(zv_http_out_t *o, int fd);
+int zv_free_out_t(zv_http_out_t *o);
+
+const char *get_shortmsg_from_status_code(int status_code);
 
 extern zv_http_header_handle_t     zv_http_headers_in[];
 

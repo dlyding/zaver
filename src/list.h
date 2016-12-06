@@ -1,5 +1,11 @@
-#ifndef _ZV_LIST_H
-#define _ZV_LIST_H
+
+/*
+ * Copyright (C) Zhu Jiashun
+ * Copyright (C) Zaver
+ */
+
+#ifndef ZV_LIST_H
+#define ZV_LIST_H
 
 #ifndef NULL
 #define NULL 0
@@ -7,7 +13,6 @@
 
 /*
 * list_head, reference linux kernel implementation
-*
 */
 
 struct list_head {
@@ -36,7 +41,7 @@ static inline void list_add(struct list_head *_new, struct list_head *head) {
 }
 
 static inline void list_add_tail(struct list_head *_new, struct list_head *head) {
-    __list_add(_new, head, head->next);
+    __list_add(_new, head->prev, head);
 }
 
 /*

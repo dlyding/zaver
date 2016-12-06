@@ -1,17 +1,11 @@
-#ifndef _UTIL_H
-#define _UTIL_H
 
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <fcntl.h>
-#include <stdio.h>
-#include <strings.h>
-#include <unistd.h>
-#include <stdlib.h>
+/*
+ * Copyright (C) Zhu Jiashun
+ * Copyright (C) Zaver
+ */
 
-#include "dbg.h"
+#ifndef UTIL_H
+#define UTIL_H
 
 // max number of listen queue
 #define LISTENQ     1024
@@ -22,6 +16,8 @@
 
 #define ZV_CONF_OK      0
 #define ZV_CONF_ERROR   100
+
+#define MIN(a,b) ((a) < (b) ? (a) : (b))
 
 struct zv_conf_s {
     void *root;

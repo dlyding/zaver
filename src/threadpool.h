@@ -1,5 +1,11 @@
-#ifndef _THREADPOOL_H
-#define _THREADPOOL_H
+
+/*
+ * Copyright (C) Zhu Jiashun
+ * Copyright (C) Zaver
+ */
+
+#ifndef THREADPOOL_H
+#define THREADPOOL_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -8,6 +14,7 @@ extern "C" {
 #include <stdlib.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <stdint.h>
 #include "dbg.h"
 
 #define THREAD_NUM 8
